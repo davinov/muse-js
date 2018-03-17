@@ -703,6 +703,10 @@ diff@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/diff/-/diff-3.2.0.tgz#c9ce393a4b7cbd0b058a725c93df299027868ff9"
 
+dsp.js@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/dsp.js/-/dsp.js-1.0.1.tgz#02554a223ee514cd0e226cb6fb88d6d0b3e91308"
+
 ecc-jsbn@~0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/ecc-jsbn/-/ecc-jsbn-0.1.1.tgz#0fc73a9ed5f0d53c38193398523ef7e543777505"

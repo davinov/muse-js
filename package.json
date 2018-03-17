@@ -31,6 +31,7 @@
   "dependencies": {
     "@types/text-encoding": "^0.0.32",
     "@types/web-bluetooth": "^0.0.2",
+    "dsp.js": "^1.0.1",
     "rxjs": "^5.5.0"
   },
   "jest": {
