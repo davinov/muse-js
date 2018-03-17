@@ -5,6 +5,8 @@ import { EEGReading } from './muse-interfaces';
 import { from } from 'rxjs/observable/from';
 import { concat } from 'rxjs/operators/concat';
 import { mergeMap } from 'rxjs/operators/mergeMap';
+import { bufferCount } from 'rxjs/operators/bufferCount';
+import { map } from 'rxjs/operators/map';
 
 export interface EEGSample {
     index: number;
@@ -43,5 +45,31 @@ export function zipSamples(eegReadings: Observable<EEGReading>): Observable<EEGS
             });
             return from(result);
         }),
+    );
+}
+
+export interface EEGTimeSeries {
+    timestamp: number;
+    data: number[][]; // first dimension is the electrode, second is time
+}
+
+export function zipSamplesToTimeSeries(
+    eegReadings: Observable<EEGReading>,
+    bufferSize: number,
+    bufferOverlap: number
+): Observable<EEGTimeSeries> {
+    return zipSamples(eegReadings).pipe(
+        bufferCount(bufferSize, bufferOverlap)
+    ,
+        map((zippedReadings: EEGSample[]): EEGTimeSeries => {
+            return {
+                timestamp: zippedReadings[0].timestamp,
+                data: zippedReadings[0].data.map( (_, electrodeId) =>
+                    zippedReadings.map(
+                        zippedReading => zippedReading.data[electrodeId]
+                    )
+                )
+            };
+        })
     );
 }
