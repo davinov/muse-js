@@ -1,19 +1,33 @@
 // tslint:disable:no-console
 
-import { channelNames, EEGReading, MuseClient } from './../../src/muse';
+import { channelNames, EEGReading, MuseClient, EEGSpectrum } from './../../src/muse';
 
 (window as any).connect = async () => {
     const graphTitles = Array.from(document.querySelectorAll('.electrode-item h3'));
-    const canvases = Array.from(document.querySelectorAll('.electrode-item canvas')) as HTMLCanvasElement[];
-    const canvasCtx = canvases.map((canvas) => canvas.getContext('2d'));
-
+    const canvases = {
+        readings: (Array.from(document.querySelectorAll('.electrode-item canvas.readings')) as HTMLCanvasElement[]).map(canvas => {
+            return {
+                canvas: canvas,
+                ctx: canvas.getContext('2d')
+            }
+        }),
+        fft: (Array.from(document.querySelectorAll('.electrode-item canvas.fft')) as HTMLCanvasElement[]).map(canvas => {
+            return {
+                canvas: canvas,
+                ctx: canvas.getContext('2d')
+            }
+        })
+    };
     graphTitles.forEach((item, index) => {
         item.textContent = channelNames[index];
     });
 
-    function plot(reading: EEGReading) {
-        const canvas = canvases[reading.electrode];
-        const context = canvasCtx[reading.electrode];
+    function plotReading(reading: EEGReading) {
+        if (!canvases.readings[reading.electrode]) {
+            return;
+        }
+        const canvas = canvases.readings[reading.electrode].canvas;
+        const context = canvases.readings[reading.electrode].ctx;
         if (!context) {
             return;
         }
@@ -32,18 +46,47 @@ import { channelNames, EEGReading, MuseClient } from './../../src/muse';
         }
     }
 
+    function plotFFT(spectrum: EEGSpectrum) {
+        spectrum.spectrums.forEach( (s, electrode) => {
+            if (!canvases.fft[electrode]) {
+                return;
+            }
+            const canvas = canvases.fft[electrode].canvas;
+            const context = canvases.fft[electrode].ctx;
+            if (!context) {
+                return;
+            }
+            const width = canvas.width / s.length;
+            const height = canvas.height;
+            context.fillStyle = 'blue';
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < s.length; i++) {
+                const sample = s[i] * height / 2.;
+                if (sample > 0) {
+                    context.fillRect(i * width, height - sample, width, sample);
+                } else {
+                    context.fillRect(i * width, height, width, -sample);
+                }
+            }
+        });
+    }
+
     const client = new MuseClient();
     client.connectionStatus.subscribe((status) => {
         console.log(status ? 'Connected!' : 'Disconnected');
     });
 
     try {
-        client.enableAux = true;
+        client.enableAux = false;
         await client.connect();
         await client.start();
         document.getElementById('headset-name')!.innerText = client.deviceName;
         client.eegReadings.subscribe((reading) => {
-            plot(reading);
+            plotReading(reading);
+        });
+        client.rawFFT.subscribe((spectrum) => {
+            plotFFT(spectrum);
         });
         client.telemetryData.subscribe((reading) => {
             document.getElementById('temperature')!.innerText = reading.temperature.toString() + '℃';

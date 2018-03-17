@@ -15,8 +15,10 @@ import {
 } from './lib/muse-interfaces';
 import { decodeEEGSamples, parseAccelerometer, parseControl, parseGyroscope, parseTelemetry } from './lib/muse-parse';
 import { decodeResponse, encodeCommand, observableCharacteristic } from './lib/muse-utils';
+import { zipSamplesToSpectrum, EEGSpectrum } from './lib/process-samples';
 
 export { zipSamples, EEGSample } from './lib/zip-samples';
+export { zipSamplesToSpectrum, EEGSpectrum } from './lib/process-samples';
 export { EEGReading, TelemetryData, AccelerometerData, GyroscopeData, XYZ, MuseControlResponse };
 
 export const MUSE_SERVICE = 0xfe8d;
@@ -52,6 +54,7 @@ export class MuseClient {
     gyroscopeData: Observable<GyroscopeData>;
     accelerometerData: Observable<AccelerometerData>;
     eegReadings: Observable<EEGReading>;
+    rawFFT: Observable<EEGSpectrum>;
 
     private gatt: BluetoothRemoteGATTServer | null = null;
     private controlChar: BluetoothRemoteGATTCharacteristic;
@@ -126,6 +129,7 @@ export class MuseClient {
             this.eegCharacteristics.push(eegChar);
         }
         this.eegReadings = merge(...eegObservables);
+        this.rawFFT = zipSamplesToSpectrum(this.eegReadings);
         this.connectionStatus.next(true);
     }
 
