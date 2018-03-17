@@ -55,3 +55,27 @@ export function computeTotalSpectrum(spectrumByElectrode: EEGSpectrum): EEGTotal
         )
     }
 }
+
+export interface FrequencyBand {
+    label: string
+    range: [number, number]
+}
+
+export interface EEGPowerBand {
+    band: FrequencyBand
+    power: number
+}
+
+export function computePowerBand(band: FrequencyBand, totalSpectrum: EEGTotalSpectrum): EEGPowerBand {
+    return {
+        band: band,
+        power: totalSpectrum.data.reduce( (totalPower, freqPower, freq) => {
+            // This is a pretty naive implentation, case of float frequencies should be addressed
+            if ( (freq >= band.range[0]) && (freq <= band.range[1]) ) {
+                return totalPower + freqPower;
+            } else {
+                return totalPower;
+            }
+        } )
+    };
+}

@@ -6,9 +6,12 @@ import { toArray } from 'rxjs/operators/toArray';
 
 import {
     FFT_BUFFER_SIZE, FFT_WINDOW_OVERLAP,
+    FrequencyBand, EEGTotalSpectrum,
+
     computeSpectrum,
     zipSamplesToSpectrum,
-    computeTotalSpectrum
+    computeTotalSpectrum,
+    computePowerBand,
 } from './process-samples';
 
 describe('computeSpectrum', () => {
@@ -71,5 +74,21 @@ describe('computeTotalSpectrum', () => {
         const result = computeTotalSpectrum(spectrumByElectrode);
         expect(result.data).toHaveLength(128);
         result.data.forEach( d => expect(d).toEqual(0+1+2+3) );
-    })
+    });
+});
+
+describe('computePowerBand', () => {
+    it('should sum all the power specral density of the requested band on a log scale', () => {
+        const totalSpectrum: EEGTotalSpectrum = {
+            timestamp: 12345678,
+            data: new Float64Array(128).fill(0).map((d, i) => i)
+        };
+        const band: FrequencyBand = {
+            label: 'Low frequencies',
+            range: [2.5, 6.1]
+        };
+        const result = computePowerBand(band, totalSpectrum);
+        expect(result.band).toEqual(band);
+        expect(result.power).toEqual(3 + 4 + 5 + 6);
+    });
 });
