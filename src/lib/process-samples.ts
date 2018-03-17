@@ -10,7 +10,6 @@ export const FFT_BUFFER_SIZE = 256;
 export const FFT_WINDOW_OVERLAP = 26;
 
 let fft = new RFFT(FFT_BUFFER_SIZE, EEG_FREQUENCY);
-
 /*  From an array of measures, apply a Hamming window and a Fast Fourier Transform
 
     The resulting spectrum contains of 128 frequency bands, the first one
@@ -25,16 +24,17 @@ export function computeSpectrum(timeSerie: number[]): Float64Array {
 
 export interface EEGSpectrum {
     timestamp: number
-    spectrum: Float64Array[]
+    spectrums: Float64Array[]
 }
 
 export function zipSamplesToSpectrum(eggSamples: Observable<EEGReading>): Observable<EEGSpectrum> {
-    return zipSamplesToTimeSeries(eggSamples, FFT_BUFFER_SIZE, 26).pipe(
+    return zipSamplesToTimeSeries(eggSamples, FFT_BUFFER_SIZE, FFT_WINDOW_OVERLAP).pipe(
         map((eegTimeSeries: EEGTimeSeries): EEGSpectrum => {
-            console.log(eegTimeSeries.data)
             return {
                 timestamp: eegTimeSeries.timestamp,
-                spectrum: eegTimeSeries.data.map(computeSpectrum)
+                spectrums: eegTimeSeries.data.map(
+                    d => new Float64Array(computeSpectrum(d))
+                )
             };
         })
     );
