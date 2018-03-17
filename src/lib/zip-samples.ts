@@ -63,7 +63,7 @@ export function zipSamplesToTimeSeries(
         bufferCount(bufferSize, bufferOverlap)
     ,
         // skip incomplete readings
-        skipLast(Math.floor(bufferSize / bufferOverlap))
+        skipLast(Math.ceil(bufferSize / bufferOverlap))
     ,
         map((zippedReadings: EEGSample[]): EEGTimeSeries => {
             return {

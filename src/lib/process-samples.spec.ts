@@ -25,26 +25,26 @@ describe('computeSpectrum', () => {
     });
 });
 
-// describe('zipSamplesToSpectrum', () => {
-//     const messages_count = Math.floor(256 / 12 * 5) + 1;
-//     const sample_messages = new Array(messages_count)
-//         .fill(undefined)
-//         .map((d, i): EEGReading => {
-//             let j = Math.floor(i / 5);
-//             return {
-//                 electrode: i % 5,
-//                 index: 100 + j,
-//                 timestamp: 1000 + j * 46.875,
-//                 samples: new Array(12).fill(1)
-//             }
-//         }
-//         );
-//     const sample_input: Observable<EEGReading> = from(sample_messages);
+describe('zipSamplesToSpectrum', () => {
+    const messages_count = Math.floor(256 / 12 * 5) + 1;
+    const sample_messages = new Array(messages_count)
+        .fill(undefined)
+        .map((d, i): EEGReading => {
+            let j = Math.floor(i / 5);
+            return {
+                electrode: i % 5,
+                index: 100 + j,
+                timestamp: 1000 + j * 46.875,
+                samples: new Array(12).fill(1)
+            }
+        }
+        );
+    const sample_input: Observable<EEGReading> = from(sample_messages);
 
-//     it('should emit a spectrum for each electrode when 256 samples are recieved and every 25 samples', async () => {
-//         const zipped = zipSamplesToSpectrum(sample_input);
-//         const result = await zipped.pipe(toArray()).toPromise();
-//         console.log(result[0])
-//         expect(result).toHaveLength(1);
-//     });
-// });
+    it('should emit a spectrum for each electrode when 256 samples are recieved and every 25 samples', async () => {
+        const zipped = zipSamplesToSpectrum(sample_input);
+        const result = await zipped.pipe(toArray()).toPromise();
+        // console.log(result[0])
+        expect(result).toHaveLength(1);
+    });
+});

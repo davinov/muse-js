@@ -139,10 +139,9 @@ describe('zipSamplesToTimeSeries', () => {
     it('should never deliver incomplete data', async () => {
         const zipped = zipSamplesToTimeSeries(sample_input, 12, 5);
         const result = await zipped.pipe(toArray()).toPromise();
-        result
-            .forEach(d => d.data.forEach(
-                e => expect(e[11]).not.toBeUndefined()
-            ));
-        expect(result).toHaveLength(3);
+        result.forEach(d => d.data.forEach(
+            e => expect(e).toHaveLength(12)
+        ));
+        expect(result).toHaveLength(2);
     });
 });
