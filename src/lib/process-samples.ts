@@ -61,12 +61,12 @@ export interface FrequencyBand {
     range: [number, number]
 }
 
-export interface EEGPowerBand {
+export interface EEGAbsolutePowerBand {
     band: FrequencyBand
     power: number
 }
 
-export function computePowerBand(band: FrequencyBand, totalSpectrum: EEGTotalSpectrum): EEGPowerBand {
+export function computeAbsolutePowerBand(band: FrequencyBand, totalSpectrum: EEGTotalSpectrum): EEGAbsolutePowerBand {
     return {
         band: band,
         power: totalSpectrum.data.reduce( (totalPower, freqPower, freq) => {
@@ -78,4 +78,37 @@ export function computePowerBand(band: FrequencyBand, totalSpectrum: EEGTotalSpe
             }
         } )
     };
+}
+
+export const POWER_BANDS:{ [index: string]: FrequencyBand } = {
+    LOW: {
+        label: 'Low frequencies',
+        range: [2.5, 6.1]
+    },
+    DELTA: {
+        label: 'Delta waves',
+        range: [1, 4]
+    },
+    THETA: {
+        label: 'Theta waves',
+        range: [4, 8]
+    },
+    ALPHA: {
+        label: 'Alpha waves',
+        range: [7.5, 13]
+    },
+    BETA: {
+        label: 'Beta waves',
+        range: [13, 30]
+    },
+    GAMMA: {
+        label: 'Gamma waves',
+        range: [30, 44]
+    },
+};
+
+export function computeAbsolutePowerBands(totalSpectrum: EEGTotalSpectrum): EEGAbsolutePowerBand[] {
+    return Object.keys(POWER_BANDS).map(
+        k => computeAbsolutePowerBand(POWER_BANDS[k], totalSpectrum)
+    );
 }

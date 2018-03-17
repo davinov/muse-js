@@ -11,7 +11,8 @@ import {
     computeSpectrum,
     zipSamplesToSpectrum,
     computeTotalSpectrum,
-    computePowerBand,
+    computeAbsolutePowerBand,
+    computeAbsolutePowerBands,
 } from './process-samples';
 
 describe('computeSpectrum', () => {
@@ -77,8 +78,8 @@ describe('computeTotalSpectrum', () => {
     });
 });
 
-describe('computePowerBand', () => {
-    it('should sum all the power specral density of the requested band on a log scale', () => {
+describe('computeAbsolutePowerBand', () => {
+    it('should sum all the power spectral density of the requested band on a log scale', () => {
         const totalSpectrum: EEGTotalSpectrum = {
             timestamp: 12345678,
             data: new Float64Array(128).fill(0).map((d, i) => i)
@@ -87,8 +88,21 @@ describe('computePowerBand', () => {
             label: 'Low frequencies',
             range: [2.5, 6.1]
         };
-        const result = computePowerBand(band, totalSpectrum);
+        const result = computeAbsolutePowerBand(band, totalSpectrum);
         expect(result.band).toEqual(band);
         expect(result.power).toEqual(3 + 4 + 5 + 6);
+    });
+});
+
+describe('computeAbsolutePowerBands', () => {
+    it('should compute the power band for all standard power bands', () => {
+        const totalSpectrum: EEGTotalSpectrum = {
+            timestamp: 12345678,
+            data: new Float64Array(128).fill(0).map((d, i) => i)
+        };
+        const result = computeAbsolutePowerBands(totalSpectrum);
+        expect(result).toHaveLength(6);
+        expect(result[0].power).toEqual(18);
+        expect(result[1].power).toEqual(10);
     });
 });
