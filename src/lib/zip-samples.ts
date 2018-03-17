@@ -7,6 +7,7 @@ import { concat } from 'rxjs/operators/concat';
 import { mergeMap } from 'rxjs/operators/mergeMap';
 import { bufferCount } from 'rxjs/operators/bufferCount';
 import { map } from 'rxjs/operators/map';
+import { skipLast } from 'rxjs/operators/skipLast';
 
 export interface EEGSample {
     index: number;
@@ -60,6 +61,9 @@ export function zipSamplesToTimeSeries(
 ): Observable<EEGTimeSeries> {
     return zipSamples(eegReadings).pipe(
         bufferCount(bufferSize, bufferOverlap)
+    ,
+        // skip incomplete readings
+        skipLast(Math.floor(bufferSize / bufferOverlap))
     ,
         map((zippedReadings: EEGSample[]): EEGTimeSeries => {
             return {

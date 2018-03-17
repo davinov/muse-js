@@ -104,6 +104,7 @@ describe('zipSamplesToTimeSeries', () => {
     it('should zip each eeg channels into a time serie', async () => {
         const zipped = zipSamplesToTimeSeries(sample_input, 12, 1);
         const result = await zipped.pipe(toArray()).toPromise();
+
         expect(result[0]).toEqual({
             timestamp: 1000.00000,
             data: [
@@ -132,5 +133,16 @@ describe('zipSamplesToTimeSeries', () => {
                 [4.02, 4.03, 4.04, 4.05, 4.06, 4.07, 4.08, 4.09, 4.10, 4.11, 4.12, 14.01]
             ]
         });
+        expect(result).toHaveLength(12);
+    });
+
+    it('should never deliver incomplete data', async () => {
+        const zipped = zipSamplesToTimeSeries(sample_input, 12, 5);
+        const result = await zipped.pipe(toArray()).toPromise();
+        result
+            .forEach(d => d.data.forEach(
+                e => expect(e[11]).not.toBeUndefined()
+            ));
+        expect(result).toHaveLength(3);
     });
 });
