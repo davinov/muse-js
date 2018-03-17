@@ -46,8 +46,8 @@ describe('zipSamplesToSpectrum', () => {
         const result = await zipped.pipe(toArray()).toPromise();
         expect(result).toHaveLength(3);
         expect(result[0].timestamp).toEqual(1000);
-        expect(result[0].spectrums).toHaveLength(5);
-        result[0].spectrums.forEach(
+        expect(result[0].data).toHaveLength(5);
+        result[0].data.forEach(
             s => s.forEach(
                 d => expect(d).not.toBeNaN()
             )

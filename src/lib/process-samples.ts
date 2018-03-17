@@ -24,7 +24,7 @@ export function computeSpectrum(timeSerie: number[]): Float64Array {
 
 export interface EEGSpectrum {
     timestamp: number
-    spectrums: Float64Array[]
+    data: Float64Array[]
 }
 
 export function zipSamplesToSpectrum(eggSamples: Observable<EEGReading>): Observable<EEGSpectrum> {
@@ -32,7 +32,7 @@ export function zipSamplesToSpectrum(eggSamples: Observable<EEGReading>): Observ
         map((eegTimeSeries: EEGTimeSeries): EEGSpectrum => {
             return {
                 timestamp: eegTimeSeries.timestamp,
-                spectrums: eegTimeSeries.data.map(
+                data: eegTimeSeries.data.map(
                     d => new Float64Array(computeSpectrum(d))
                 )
             };

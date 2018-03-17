@@ -89,7 +89,7 @@ async function main() {
 
     spectrum = {
         timestamp: 12345678
-        spectrums: [ // one array per eletrode
+        data: [ // one array per eletrode
             [0, ..., 125] // an array of spectral power per Herz
             [0, ..., 125]
             [0, ..., 125]

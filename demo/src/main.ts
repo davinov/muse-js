@@ -47,7 +47,7 @@ import { channelNames, EEGReading, MuseClient, EEGSpectrum } from './../../src/m
     }
 
     function plotFFT(spectrum: EEGSpectrum) {
-        spectrum.spectrums.forEach( (s, electrode) => {
+        spectrum.data.forEach( (s, electrode) => {
             if (!canvases.fft[electrode]) {
                 return;
             }
