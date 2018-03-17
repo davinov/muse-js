@@ -51,12 +51,14 @@ export function computeTotalSpectrum(spectrumByElectrode: EEGSpectrum): EEGTotal
         data: spectrumByElectrode.data[0].map( (freqValue, freq) =>
             spectrumByElectrode.data
                 .map( (spectrum) => spectrum[freq] )
-                .reduce( (sum, v) => sum + v )
+                .filter(isFinite)
+                .reduce( (sum, v) => sum + v , 0)
         )
     }
 }
 
 export interface FrequencyBand {
+    id: string
     label: string
     range: [number, number]
 }
@@ -69,39 +71,47 @@ export interface EEGAbsolutePowerBand {
 export function computeAbsolutePowerBand(band: FrequencyBand, totalSpectrum: EEGTotalSpectrum): EEGAbsolutePowerBand {
     return {
         band: band,
-        power: totalSpectrum.data.reduce( (totalPower, freqPower, freq) => {
-            // This is a pretty naive implentation, case of float frequencies should be addressed
-            if ( (freq >= band.range[0]) && (freq <= band.range[1]) ) {
-                return totalPower + freqPower;
-            } else {
-                return totalPower;
-            }
-        } )
+        power: Math.log(
+            totalSpectrum.data.reduce( (totalPower, freqPower, freq) => {
+                // This is a pretty naive implentation, case of float frequencies should be addressed
+                if ( (freq >= band.range[0]) && (freq <= band.range[1]) && isFinite(freqPower)) {
+                    return totalPower + freqPower;
+                } else {
+                    return totalPower;
+                }
+            }, 0 )
+        )
     };
 }
 
 export const POWER_BANDS:{ [index: string]: FrequencyBand } = {
     LOW: {
+        id: 'LOW',
         label: 'Low frequencies',
         range: [2.5, 6.1]
     },
     DELTA: {
+        id: 'DELTA',
         label: 'Delta waves',
         range: [1, 4]
     },
     THETA: {
+        id: 'THETA',
         label: 'Theta waves',
         range: [4, 8]
     },
     ALPHA: {
+        id: 'ALPHA',
         label: 'Alpha waves',
         range: [7.5, 13]
     },
     BETA: {
+        id: 'BETA',
         label: 'Beta waves',
         range: [13, 30]
     },
     GAMMA: {
+        id: 'GAMMA',
         label: 'Gamma waves',
         range: [30, 44]
     },
@@ -110,5 +120,13 @@ export const POWER_BANDS:{ [index: string]: FrequencyBand } = {
 export function computeAbsolutePowerBands(totalSpectrum: EEGTotalSpectrum): EEGAbsolutePowerBand[] {
     return Object.keys(POWER_BANDS).map(
         k => computeAbsolutePowerBand(POWER_BANDS[k], totalSpectrum)
+    );
+}
+
+export function spectrumToAbsolutePowerBands(eggSpectrum: Observable<EEGSpectrum>): Observable<EEGAbsolutePowerBand[]> {
+    return eggSpectrum.pipe(
+        map(d => computeTotalSpectrum(d))
+    ,
+        map(d => computeAbsolutePowerBands(d))
     );
 }

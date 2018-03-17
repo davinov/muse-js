@@ -85,6 +85,14 @@ import { channelNames, EEGReading, MuseClient, EEGSpectrum } from './../../src/m
         client.eegReadings.subscribe((reading) => {
             plotReading(reading);
         });
+        client.absoluteBandPowers.subscribe((absoluteBandPowers) => {
+            const normalize = (v: number) => v.toFixed(2) + ' B';
+            ['delta', 'theta', 'alpha', 'beta', 'gamma'].forEach(k => {
+                document.getElementById('absolute-band-power-' + k)!.innerText = normalize(
+                    absoluteBandPowers.find(d => d.band.id == k.toUpperCase()).power
+                );
+            });
+        });
         client.rawFFT.subscribe((spectrum) => {
             plotFFT(spectrum);
         });

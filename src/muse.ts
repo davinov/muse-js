@@ -15,7 +15,10 @@ import {
 } from './lib/muse-interfaces';
 import { decodeEEGSamples, parseAccelerometer, parseControl, parseGyroscope, parseTelemetry } from './lib/muse-parse';
 import { decodeResponse, encodeCommand, observableCharacteristic } from './lib/muse-utils';
-import { zipSamplesToSpectrum, EEGSpectrum } from './lib/process-samples';
+import {
+    EEGSpectrum, EEGAbsolutePowerBand,
+    zipSamplesToSpectrum, spectrumToAbsolutePowerBands
+} from './lib/process-samples';
 
 export { zipSamples, EEGSample } from './lib/zip-samples';
 export { zipSamplesToSpectrum, EEGSpectrum } from './lib/process-samples';
@@ -45,6 +48,7 @@ export const channelNames = [
 ];
 
 export class MuseClient {
+    absoluteBandPowers: Observable<EEGAbsolutePowerBand[]>;
     enableAux = false;
     deviceName: string | null = '';
     connectionStatus = new BehaviorSubject<boolean>(false);
@@ -128,8 +132,10 @@ export class MuseClient {
             );
             this.eegCharacteristics.push(eegChar);
         }
-        this.eegReadings = merge(...eegObservables);
-        this.rawFFT = zipSamplesToSpectrum(this.eegReadings);
+        this.eegReadings = merge(...eegObservables).pipe(share());
+        this.rawFFT = zipSamplesToSpectrum(this.eegReadings).pipe(share());
+        this.absoluteBandPowers = spectrumToAbsolutePowerBands(this.rawFFT);
+
         this.connectionStatus.next(true);
     }
 

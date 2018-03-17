@@ -6,13 +6,14 @@ import { toArray } from 'rxjs/operators/toArray';
 
 import {
     FFT_BUFFER_SIZE, FFT_WINDOW_OVERLAP,
-    FrequencyBand, EEGTotalSpectrum,
+    FrequencyBand, EEGTotalSpectrum, EEGSpectrum,
 
     computeSpectrum,
     zipSamplesToSpectrum,
     computeTotalSpectrum,
     computeAbsolutePowerBand,
     computeAbsolutePowerBands,
+    spectrumToAbsolutePowerBands,
 } from './process-samples';
 
 describe('computeSpectrum', () => {
@@ -85,12 +86,13 @@ describe('computeAbsolutePowerBand', () => {
             data: new Float64Array(128).fill(0).map((d, i) => i)
         };
         const band: FrequencyBand = {
+            id: 'LOW',
             label: 'Low frequencies',
             range: [2.5, 6.1]
         };
         const result = computeAbsolutePowerBand(band, totalSpectrum);
         expect(result.band).toEqual(band);
-        expect(result.power).toEqual(3 + 4 + 5 + 6);
+        expect(result.power).toEqual(Math.log(3 + 4 + 5 + 6));
     });
 });
 
@@ -102,7 +104,27 @@ describe('computeAbsolutePowerBands', () => {
         };
         const result = computeAbsolutePowerBands(totalSpectrum);
         expect(result).toHaveLength(6);
-        expect(result[0].power).toEqual(18);
-        expect(result[1].power).toEqual(10);
+        expect(result[0].power).toEqual(Math.log(18));
+        expect(result[1].power).toEqual(Math.log(10));
+    });
+});
+
+describe('spectrumToAbsolutePowerBands', () => {
+    it('should emit an array of absolute band powers each time a spectrum is emitted', async () => {
+        const sample_messages = new Array(10).fill(undefined)
+            .map( (_, i) => {
+                return {
+                    timestamp: 12345678,
+                    data: new Array(4)
+                        .fill([])
+                        .map((d, i) => new Float64Array(128).fill(i))
+                }
+            });
+        const sample_input: Observable<EEGSpectrum> = from(sample_messages);
+        const result = await spectrumToAbsolutePowerBands(sample_input).pipe(toArray()).toPromise();
+        expect(result).toHaveLength(10);
+        result.forEach( (r) => {
+            expect(r).toHaveLength(6);
+        });
     });
 });
