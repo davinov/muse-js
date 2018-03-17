@@ -4,7 +4,12 @@ import { EEGReading } from './muse-interfaces';
 import { from } from 'rxjs/observable/from';
 import { toArray } from 'rxjs/operators/toArray';
 
-import { computeSpectrum, zipSamplesToSpectrum, FFT_BUFFER_SIZE, FFT_WINDOW_OVERLAP } from './process-samples';
+import {
+    FFT_BUFFER_SIZE, FFT_WINDOW_OVERLAP,
+    computeSpectrum,
+    zipSamplesToSpectrum,
+    computeTotalSpectrum
+} from './process-samples';
 
 describe('computeSpectrum', () => {
     it('should compute the fft of a 256 samples array', () => {
@@ -53,4 +58,18 @@ describe('zipSamplesToSpectrum', () => {
             )
         );
     });
+});
+
+describe('computeTotalSpectrum', () => {
+    it('should sum the requested band of the spectrums', () => {
+        const spectrumByElectrode = {
+            timestamp: 12345678,
+            data: new Array(4)
+                .fill([])
+                .map( (d, i) => new Float64Array(128).fill(i))
+        };
+        const result = computeTotalSpectrum(spectrumByElectrode);
+        expect(result.data).toHaveLength(128);
+        result.data.forEach( d => expect(d).toEqual(0+1+2+3) );
+    })
 });

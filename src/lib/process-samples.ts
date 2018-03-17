@@ -39,3 +39,19 @@ export function zipSamplesToSpectrum(eggSamples: Observable<EEGReading>): Observ
         })
     );
 }
+
+export interface EEGTotalSpectrum {
+    timestamp: number
+    data: Float64Array
+}
+
+export function computeTotalSpectrum(spectrumByElectrode: EEGSpectrum): EEGTotalSpectrum {
+    return {
+        timestamp: spectrumByElectrode.timestamp,
+        data: spectrumByElectrode.data[0].map( (freqValue, freq) =>
+            spectrumByElectrode.data
+                .map( (spectrum) => spectrum[freq] )
+                .reduce( (sum, v) => sum + v )
+        )
+    }
+}
