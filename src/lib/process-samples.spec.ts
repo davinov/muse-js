@@ -14,6 +14,8 @@ import {
     computeAbsolutePowerBand,
     computeAbsolutePowerBands,
     spectrumToAbsolutePowerBands,
+    computeRelativePowerBands,
+    spectrumToRelativePowerBands,
 } from './process-samples';
 
 describe('computeSpectrum', () => {
@@ -103,28 +105,54 @@ describe('computeAbsolutePowerBands', () => {
             data: new Float64Array(128).fill(0).map((d, i) => i)
         };
         const result = computeAbsolutePowerBands(totalSpectrum);
-        expect(result).toHaveLength(6);
-        expect(result[0].power).toEqual(Math.log(18));
-        expect(result[1].power).toEqual(Math.log(10));
+        expect(result).toHaveLength(5);
+        expect(result[0].power).toEqual(Math.log(10));
+        expect(result[1].power).toEqual(Math.log(30));
     });
 });
 
+const eegSpectrumSampleMessages = new Array(10).fill(undefined)
+    .map((_, i) => {
+        return {
+            timestamp: 12345678,
+            data: new Array(4)
+                .fill([])
+                .map((d, i) => new Float64Array(128).fill(i))
+        }
+    });
+const eegSpectrumSampleInput: Observable<EEGSpectrum> = from(eegSpectrumSampleMessages);
+
 describe('spectrumToAbsolutePowerBands', () => {
     it('should emit an array of absolute band powers each time a spectrum is emitted', async () => {
-        const sample_messages = new Array(10).fill(undefined)
-            .map( (_, i) => {
-                return {
-                    timestamp: 12345678,
-                    data: new Array(4)
-                        .fill([])
-                        .map((d, i) => new Float64Array(128).fill(i))
-                }
-            });
-        const sample_input: Observable<EEGSpectrum> = from(sample_messages);
-        const result = await spectrumToAbsolutePowerBands(sample_input).pipe(toArray()).toPromise();
+        const result = await spectrumToAbsolutePowerBands(eegSpectrumSampleInput).pipe(toArray()).toPromise();
         expect(result).toHaveLength(10);
         result.forEach( (r) => {
-            expect(r).toHaveLength(6);
+            expect(r).toHaveLength(5);
+        });
+    });
+});
+
+describe('computeRelativePowerBands', () => {
+    it('should sum all the power spectral density of the requested band and compare it to the total of bands', () => {
+        const totalSpectrum: EEGTotalSpectrum = {
+            timestamp: 12345678,
+            data: new Float64Array(128).fill(0).map((d, i) => i)
+        };
+        const result = computeRelativePowerBands(totalSpectrum);
+        expect(result).toHaveLength(5);
+        result.forEach( r => {
+            expect(r.power).toBeLessThan(1);
+            expect(r.power).toBeGreaterThan(0);
+        });
+    });
+});
+
+describe('spectrumToRelativePowerBands', () => {
+    it('should emit an array of relative band powers each time a spectrum is emitted', async () => {
+        const result = await spectrumToRelativePowerBands(eegSpectrumSampleInput).pipe(toArray()).toPromise();
+        expect(result).toHaveLength(10);
+        result.forEach((r) => {
+            expect(r).toHaveLength(5);
         });
     });
 });

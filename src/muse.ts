@@ -16,8 +16,8 @@ import {
 import { decodeEEGSamples, parseAccelerometer, parseControl, parseGyroscope, parseTelemetry } from './lib/muse-parse';
 import { decodeResponse, encodeCommand, observableCharacteristic } from './lib/muse-utils';
 import {
-    EEGSpectrum, EEGAbsolutePowerBand,
-    zipSamplesToSpectrum, spectrumToAbsolutePowerBands
+    EEGSpectrum, EEGAbsolutePowerBand, EEGRelativePowerBand,
+    zipSamplesToSpectrum, spectrumToAbsolutePowerBands, spectrumToRelativePowerBands
 } from './lib/process-samples';
 
 export { zipSamples, EEGSample } from './lib/zip-samples';
@@ -48,7 +48,6 @@ export const channelNames = [
 ];
 
 export class MuseClient {
-    absoluteBandPowers: Observable<EEGAbsolutePowerBand[]>;
     enableAux = false;
     deviceName: string | null = '';
     connectionStatus = new BehaviorSubject<boolean>(false);
@@ -59,6 +58,8 @@ export class MuseClient {
     accelerometerData: Observable<AccelerometerData>;
     eegReadings: Observable<EEGReading>;
     rawFFT: Observable<EEGSpectrum>;
+    absoluteBandPowers: Observable<EEGAbsolutePowerBand[]>;
+    relativeBandPowers: Observable<EEGRelativePowerBand[]>;
 
     private gatt: BluetoothRemoteGATTServer | null = null;
     private controlChar: BluetoothRemoteGATTCharacteristic;
@@ -135,6 +136,7 @@ export class MuseClient {
         this.eegReadings = merge(...eegObservables).pipe(share());
         this.rawFFT = zipSamplesToSpectrum(this.eegReadings).pipe(share());
         this.absoluteBandPowers = spectrumToAbsolutePowerBands(this.rawFFT);
+        this.relativeBandPowers = spectrumToRelativePowerBands(this.rawFFT);
 
         this.connectionStatus.next(true);
     }

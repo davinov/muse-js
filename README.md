@@ -75,24 +75,3 @@ async function main() {
   await client.connect();
 }
 ```
-
-## Reference
-### Readings
-
-    reading = {
-        electrode: 0, // the electrode number, from 0 to 4
-        samples: [ // an array of 12 potential values
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
-        ],
-        timestamp: 12345678
-    }
-
-    spectrum = {
-        timestamp: 12345678
-        data: [ // one array per eletrode
-            [0, ..., 125] // an array of spectral power per Herz
-            [0, ..., 125]
-            [0, ..., 125]
-            [0, ..., 125]
-        ]
-    }

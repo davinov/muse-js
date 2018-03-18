@@ -7,7 +7,7 @@ import { zipSamples, zipSamplesToTimeSeries } from './zip-samples';
 
 // tslint:disable:object-literal-sort-keys
 
-const sample_input = of(
+const sampleInput = of(
     {
         electrode: 2, index: 100, timestamp: 1000,
         samples: [2.01, 2.02, 2.03, 2.04, 2.05, 2.06, 2.07, 2.08, 2.09, 2.10, 2.11, 2.12],
@@ -52,7 +52,7 @@ const sample_input = of(
 
 describe('zipSamples', () => {
     it('should zip all eeg channels into one array', async () => {
-        const zipped = zipSamples(sample_input);
+        const zipped = zipSamples(sampleInput);
         const result = await zipped.pipe(toArray()).toPromise();
         expect(result).toEqual([
             { index: 100, timestamp: 1000.00000, data: [0.01, 1.01, 2.01, 3.01, 4.01] },
@@ -102,7 +102,7 @@ describe('zipSamples', () => {
 
 describe('zipSamplesToTimeSeries', () => {
     it('should zip each eeg channels into a time serie', async () => {
-        const zipped = zipSamplesToTimeSeries(sample_input, 12, 1);
+        const zipped = zipSamplesToTimeSeries(sampleInput, 12, 1);
         const result = await zipped.pipe(toArray()).toPromise();
 
         expect(result[0]).toEqual({
@@ -137,7 +137,7 @@ describe('zipSamplesToTimeSeries', () => {
     });
 
     it('should never deliver incomplete data', async () => {
-        const zipped = zipSamplesToTimeSeries(sample_input, 12, 5);
+        const zipped = zipSamplesToTimeSeries(sampleInput, 12, 5);
         const result = await zipped.pipe(toArray()).toPromise();
         result.forEach(d => d.data.forEach(
             e => expect(e).toHaveLength(12)

@@ -93,6 +93,14 @@ import { channelNames, EEGReading, MuseClient, EEGSpectrum } from './../../src/m
                 );
             });
         });
+        client.relativeBandPowers.subscribe((relativeBandPowers) => {
+            const normalize = (v: number) => (v * 100).toFixed(0) + '%';
+            ['delta', 'theta', 'alpha', 'beta', 'gamma'].forEach(k => {
+                document.getElementById('relative-band-power-' + k)!.innerText = normalize(
+                    relativeBandPowers.find(d => d.band.id == k.toUpperCase()).power
+                );
+            });
+        });
         client.rawFFT.subscribe((spectrum) => {
             plotFFT(spectrum);
         });
