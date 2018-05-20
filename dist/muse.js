@@ -302,4 +302,6 @@ var MuseClient = /** @class */ (function () {
     return MuseClient;
 }());
 exports.MuseClient = MuseClient;
+var process_samples_3 = require("./lib/process-samples");
+exports.POWER_BANDS = process_samples_3.POWER_BANDS;
 //# sourceMappingURL=muse.js.map

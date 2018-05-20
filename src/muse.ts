@@ -204,3 +204,5 @@ export class MuseClient {
         }
     }
 }
+
+export { EEGRelativePowerBand, POWER_BANDS, FrequencyBand } from './lib/process-samples';

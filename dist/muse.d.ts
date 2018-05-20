@@ -36,3 +36,4 @@ export declare class MuseClient {
     disconnect(): void;
     private getTimestamp(eventIndex);
 }
+export { EEGRelativePowerBand, POWER_BANDS, FrequencyBand } from './lib/process-samples';
